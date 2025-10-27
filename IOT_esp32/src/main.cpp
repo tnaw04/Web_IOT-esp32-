@@ -31,7 +31,7 @@ const char* RELAY1_STATUS_TOPIC = "esp/status/relay1";
 const char* RELAY2_STATUS_TOPIC = "esp/status/relay2";
 const char* RELAY3_STATUS_TOPIC = "esp/status/relay3";
 
-// =================== Khai báo prototype ===================
+
 void controlRelay(String message);
 
 void controlRelay(String message) {
@@ -52,12 +52,13 @@ void controlRelay(String message) {
         digitalWrite(pin, state);
         Serial.printf("%s state changed to %s\n", relay_name, state_str);
 
-        // Lưu trạng thái mới vào Preferences
+        
         preferences.begin("relay-states", false);
         preferences.putUChar(relay_name, state);
         preferences.end();
 
         // Gửi trạng thái mới lên MQTT
+
         JsonDocument statusDoc;
         char jsonStatus[64];
         statusDoc["relay"] = relay_name;
@@ -106,15 +107,14 @@ void setup()
     pinMode(RELAY2,OUTPUT);
     pinMode(RELAY3,OUTPUT);
 
-    // Khởi tạo Preferences và khôi phục trạng thái relay
-    preferences.begin("relay-states", false); // Mở namespace "relay-states", false = read/write
-    digitalWrite(RELAY1, preferences.getUChar("relay1", LOW)); // Đọc trạng thái relay1, mặc định là LOW nếu chưa có
-    digitalWrite(RELAY2, preferences.getUChar("relay2", LOW)); // Đọc trạng thái relay2
-    digitalWrite(RELAY3, preferences.getUChar("relay3", LOW)); // Đọc trạng thái relay3
+    
+    preferences.begin("relay-states", false); 
+    digitalWrite(RELAY1, preferences.getUChar("relay1", LOW)); 
+    digitalWrite(RELAY2, preferences.getUChar("relay2", LOW)); 
+    digitalWrite(RELAY3, preferences.getUChar("relay3", LOW)); 
     Serial.println("Restored relay states from Preferences.");
     Serial.printf("Initial states: R1=%d, R2=%d, R3=%d\n", digitalRead(RELAY1), digitalRead(RELAY2), digitalRead(RELAY3));
-    preferences.end(); // Đóng preferences
-
+    preferences.end(); 
 
     WiFiManager wm;
 
@@ -138,7 +138,6 @@ void loop()
     if(!client.connected()) reconnect();
     client.loop();
 
-    // Phần code đọc cảm biến và gửi đi vẫn giữ nguyên
 
     float lux = lightMeter.readLightLevel();
     float temp = dht.readTemperature();
