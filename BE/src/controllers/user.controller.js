@@ -4,8 +4,6 @@ const getProfile = async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    // Giả sử chúng ta lấy thông tin cho người dùng có user_id = 1
-    // Trong một ứng dụng thực tế, bạn sẽ lấy ID từ session hoặc token xác thực
     const userId = 1; 
 
     const result = await pool.request()

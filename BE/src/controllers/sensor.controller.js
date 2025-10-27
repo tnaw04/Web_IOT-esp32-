@@ -1,11 +1,10 @@
-// src/controllers/sensor.controller.js
 
-const { poolPromise, sql } = require('../db'); // Đi ra một cấp để vào file db.js
+const { poolPromise, sql } = require('../db');
 
-// Biến này sẽ giữ mapping được tải từ CSDL
+
 let sensorMapping = {};
 
-// Hàm để tải và khởi tạo sensorMapping từ CSDL
+
 const loadSensorMapping = async () => {
     try {
         const pool = await poolPromise;
@@ -20,7 +19,7 @@ const loadSensorMapping = async () => {
         console.log('Sensor mapping loaded successfully:', sensorMapping);
     } catch (err) {
         console.error('FATAL: Failed to load sensor mapping. Shutting down.', err);
-        process.exit(1); // Dừng ứng dụng nếu không tải được mapping
+        process.exit(1); 
     }
 };
 
@@ -31,7 +30,7 @@ const createSensorData = async (data) => {
         await transaction.begin();
 
         try {
-            // Lặp qua từng key trong object data (temperature, humidity, ...)
+            
             for (const key in data) {
                 if (sensorMapping[key]) {
                     const sensor_id = sensorMapping[key];
@@ -41,7 +40,7 @@ const createSensorData = async (data) => {
                     await request
                         .input('sensor_id', sql.Int, sensor_id)
                         .input('value', sql.Real, value)
-                        // Sửa lỗi múi giờ: Ghi lại thời gian là giờ UTC hiện tại + 7 tiếng.
+                      
                         .query(`
                             INSERT INTO SensorData (sensor_id, value, recorded_at)
                             VALUES (@sensor_id, @value, DATEADD(hour, 7, GETUTCDATE()))
@@ -52,7 +51,7 @@ const createSensorData = async (data) => {
             console.log('Data inserted successfully into SQL Server');
         } catch (err) {
             await transaction.rollback();
-            throw err; // Ném lỗi để khối catch bên ngoài bắt được
+            throw err; 
         }
 
     } catch (err) {
@@ -61,23 +60,22 @@ const createSensorData = async (data) => {
 };
 
 const getSensorData = async (req, res) => {
-    // Lấy các tham số từ query string, với các giá trị mặc định
+  
     const {
         page = 1,
-        limit = 1000, // Tăng giới hạn mặc định để lấy nhiều dữ liệu hơn cho client-side filtering
+        limit = 1000, 
         sortKey = 'Timestamp',
         sortOrder = 'desc',
         startDate,
         endDate,
-        search // Thêm tham số tìm kiếm
+        search 
     } = req.query;
 
-    // --- Biện pháp bảo mật: Whitelisting ---
-    // Chỉ cho phép sắp xếp theo các cột đã định sẵn để tránh SQL Injection
+    
     const allowedSortKeys = ['Timestamp', 'temperature', 'humidity', 'luminosity'];
     const safeSortKey = allowedSortKeys.includes(sortKey) ? sortKey : 'Timestamp';
     const safeSortOrder = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-    // -----------------------------------------
+
 
     const offset = (page - 1) * limit;
 
@@ -86,13 +84,13 @@ const getSensorData = async (req, res) => {
         const request = pool.request();
 
         let whereClauses = [];
-        // Chú ý: Tên cột trong CSDL là 'recorded_at'
+   
         if (startDate) {
             whereClauses.push(`recorded_at >= @startDate`);
             request.input('startDate', sql.Date, startDate);
         }
         if (endDate) {
-            // Thêm 1 ngày để bao gồm cả ngày kết thúc
+         
             let inclusiveEndDate = new Date(endDate);
             inclusiveEndDate.setDate(inclusiveEndDate.getDate() + 1);
             whereClauses.push(`recorded_at < @endDate`);
@@ -101,8 +99,7 @@ const getSensorData = async (req, res) => {
 
         let whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
-        // --- Thêm logic tìm kiếm ---
-        // Điều kiện tìm kiếm sẽ được áp dụng sau khi PIVOT
+        
         let postPivotWhere = '';
         if (search) {
             postPivotWhere = `
@@ -114,8 +111,7 @@ const getSensorData = async (req, res) => {
             request.input('searchTerm', sql.NVarChar, `%${search}%`);
         }
 
-        // Câu truy vấn PIVOT để biến đổi dữ liệu
-        // Thay thế PIVOT bằng GROUP BY với conditional aggregation (CASE)
+      
         const pivotQuery = `
             WITH PivotedData AS (
                 SELECT
@@ -131,10 +127,9 @@ const getSensorData = async (req, res) => {
             )
         `;
 
-        // --- Query 1: Lấy tổng số bản ghi (để tính tổng số trang) ---
-        // Cần một request riêng vì request cũ đã có input
+        
         const countRequest = pool.request();
-        // Sao chép các tham số từ request chính sang countRequest để truy vấn đếm hoạt động chính xác
+       
         for (const key in request.parameters) {
             countRequest.input(key, request.parameters[key].type, request.parameters[key].value);
         }
@@ -143,7 +138,7 @@ const getSensorData = async (req, res) => {
         const totalRecords = countResult.recordset[0].total;
         const totalPages = Math.ceil(totalRecords / limit);
 
-        // --- Query 2: Lấy dữ liệu cho trang hiện tại ---
+       
         const dataQuery = `
             ${pivotQuery}
             SELECT * FROM PivotedData ${postPivotWhere}
@@ -154,7 +149,7 @@ const getSensorData = async (req, res) => {
 
         const dataResult = await request.query(dataQuery);
 
-        // Trả về dữ liệu theo cấu trúc mà frontend mong đợi
+      
         res.json({
             totalPages: totalPages,
             data: dataResult.recordset
@@ -170,8 +165,7 @@ const getLatestSensorData = async (req, res) => {
     try {
         const pool = await poolPromise;
 
-        // Tối ưu hóa truy vấn để chỉ lấy 1 bản ghi mới nhất
-        // và làm tròn giá trị ngay tại CSDL
+        
         const query = `
             SELECT TOP 1
                 FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
@@ -186,7 +180,7 @@ const getLatestSensorData = async (req, res) => {
 
         const result = await pool.request().query(query);
 
-        res.json(result.recordset[0] || null); // Trả về một object hoặc null
+        res.json(result.recordset[0] || null); 
 
     } catch (err) {
         console.error('SQL Server get latest data error:', err);
@@ -227,7 +221,7 @@ const getHistoricalSensorData = async (req, res) => {
 module.exports = {
     createSensorData,
     getSensorData,
-    loadSensorMapping, // Xuất hàm mới
+    loadSensorMapping,
     getLatestSensorData,
     getHistoricalSensorData,
 };
