@@ -1,0 +1,260 @@
+/* --- Trang dữ liệu cảm biến --- */
+.data-page {
+  padding: 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.data-page h1 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+/* --- Khu vực điều khiển: tìm kiếm + sắp xếp + số dòng --- */
+.controls-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f0f7ff;
+  border-radius: 8px;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+/* Ô tìm kiếm */
+.search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #a0aec0;
+}
+
+.search-input {
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 300px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+}
+
+/* Box cho dropdown lọc theo danh mục */
+.filter-box {
+  display: flex;
+  align-items: center;
+}
+
+.filter-box label {
+  margin-right: 10px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.category-select {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Dropdown chọn số dòng hiển thị */
+.items-per-page-box {
+  display: flex;
+  align-items: center;
+}
+
+.items-per-page-box label {
+  margin-right: 10px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.items-per-page-select {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Thông báo khi không có dữ liệu */
+.no-data-message {
+  text-align: center;
+  margin-top: 30px;
+  color: #718096;
+  font-style: italic;
+}
+
+/* --- Wrapper cho bảng và loading overlay --- */
+.table-wrapper {
+  position: relative;
+  min-height: 300px; /* Chiều cao tối thiểu để spinner không bị nhảy lên khi bảng trống */
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 8px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.loading-overlay span {
+  margin-top: 15px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Spinner animation */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* --- Bảng dữ liệu --- */
+.data-table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* cố định bố cục */
+  text-align: center;
+  font-size: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tiêu đề bảng */
+.data-table thead th {
+  background-color: #f5f9f5;
+  font-weight: 600;
+  position: relative; /* Cần cho việc định vị mũi tên */
+  padding-right: 24px; /* Thêm khoảng trống cho mũi tên */
+}
+
+/* --- CSS cho các tiêu đề cột có thể sắp xếp --- */
+.data-table th.sortable {
+  cursor: pointer;
+  user-select: none; /* Ngăn chọn văn bản khi click nhanh */
+}
+
+.data-table th.sortable:hover {
+  background-color: #e9f0e9; /* Màu nền hơi đậm hơn khi hover */
+}
+
+/* Mũi tên (sử dụng pseudo-elements ::before và ::after) */
+.data-table th.sortable::before,
+.data-table th.sortable::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  border: 4px solid transparent;
+  opacity: 0.4; /* Mặc định mờ đi */
+}
+
+.data-table th.sortable::before { /* Mũi tên lên */
+  top: calc(50% - 9px);
+  border-bottom-color: #4a5568;
+}
+
+.data-table th.sortable::after { /* Mũi tên xuống */
+  bottom: calc(50% - 9px);
+  border-top-color: #4a5568;
+}
+
+/* Cột STT */
+.data-table th:nth-child(1),
+.data-table td:nth-child(1) {
+  width: 60px;
+}
+
+/* Cột Thời gian */
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+  min-width: 180px;
+  white-space: nowrap !important;
+  text-align: center;
+}
+
+/* Cột Nhiệt độ, độ ẩm, ánh sáng */
+.data-table th:nth-child(3),
+.data-table td:nth-child(3),
+.data-table th:nth-child(4),
+.data-table td:nth-child(4),
+.data-table th:nth-child(5),
+.data-table td:nth-child(5) {
+  width: 150px;
+  text-align: center;
+}
+
+/* --- Hiển thị mũi tên đang được chọn --- */
+.data-table th.sorted-asc::before,
+.data-table th.sorted-desc::after {
+  opacity: 1; /* Làm cho mũi tên được chọn rõ nét */
+  color: #2c5282; /* Màu xanh đậm */
+}
+.data-table th.sorted-asc::before { border-bottom-color: #2c5282; }
+.data-table th.sorted-desc::after { border-top-color: #2c5282; }
+
+
+/* Hover hàng dữ liệu */
+.data-table tbody tr:hover {
+  background-color: #f0f7ff;
+  transition: background-color 0.2s;
+}
+
+/* Responsive nhỏ gọn hơn */
+@media (max-width: 768px) {
+  .search-input {
+    width: 100%;
+  }
+
+  .data-table {
+    font-size: 14px;
+  }
+}

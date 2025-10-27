@@ -1,0 +1,69 @@
+/* src/App.css */
+
+.App {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Ngăn cuộn ngang trên toàn bộ ứng dụng */
+  text-align: left;
+}
+
+.main-content {
+  flex-grow: 1; /* Cho phép phần nội dung chính chiếm hết không gian còn lại */
+  padding: 20px;
+  background-color: #e7f5dc; /* Màu nền xanh lá cây nhạt giống trong hình */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-cards-container {
+  display: flex;
+  gap: 20px; /* Tạo khoảng cách giữa các thẻ */
+  flex-wrap: wrap; /* Cho phép các thẻ xuống dòng nếu không đủ chỗ */
+  justify-content: center; /* Center the cards */
+}
+
+.dashboard-body {
+  display: flex;
+  gap: 20px; /* Tạo khoảng cách giữa hai cột */
+  align-items: flex-start; /* Căn chỉnh các mục theo phía trên, ngăn kéo dài chiều cao */
+  margin-top: 20px;
+}
+
+.chart-section {
+  flex-grow: 1; /* Cho phép cột biểu đồ co giãn để lấp đầy không gian */
+  min-width: 0; /* Cần thiết để flex-grow hoạt động đúng trong một số trường hợp */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Vertically center the chart component */
+}
+
+.controls-section {
+  flex-basis: 300px; /* Đặt chiều rộng cơ sở cho bảng điều khiển */
+  flex-shrink: 0; /* Ngăn không cho cột này co lại */
+  margin-right: 40px; /* Thêm khoảng đệm bên phải để tạo khoảng trống */
+}
+
+/* --- Responsive Styles for Mobile Devices --- */
+@media (max-width: 768px) {
+  .App {
+    /* Trên mobile, chúng ta không cần hiển thị sidebar và nội dung cạnh nhau nữa */
+    flex-direction: column;
+  }
+
+  /* Giả sử Sidebar có class là .sidebar, chúng ta sẽ ẩn nó đi */
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    height: auto; /* Cho phép nội dung dài hơn màn hình và có thể cuộn */
+    min-height: 100vh;
+  }
+
+  .dashboard-body {
+    flex-direction: column; /* Xếp biểu đồ và bảng điều khiển chồng lên nhau */
+    align-items: stretch; /* Kéo dài các mục để có chiều rộng bằng nhau */
+  }
+}

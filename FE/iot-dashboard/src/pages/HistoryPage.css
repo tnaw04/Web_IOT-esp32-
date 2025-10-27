@@ -1,0 +1,82 @@
+.history-page {
+  padding: 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.history-page h1 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+.history-page p {
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* Áp dụng style giống .controls-container từ DataPage */
+.controls-container {
+  display: flex;
+  justify-content: space-between; /* Căn đều các item */
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f0f7ff; /* Màu nền xanh nhạt */
+  border-radius: 8px; /* Bo tròn góc */
+  flex-wrap: wrap;
+  gap: 25px; /* Tăng khoảng cách giữa các bộ lọc */
+}
+
+/* Áp dụng style giống .sort-box từ DataPage */
+.filter-box {
+  display: flex;
+  align-items: center;
+}
+
+.filter-box label {
+  margin-right: 10px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.filter-select {
+  padding: 10px 12px; /* Giảm padding để thu gọn */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+  min-width: 110px;  
+}
+
+/* Box cho dropdown chọn số dòng (style giống DataPage) */
+.items-per-page-box {
+  display: flex;
+  align-items: center;
+}
+
+.items-per-page-box label {
+  margin-right: 10px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+/* Tái sử dụng class .filter-select đã có */
+
+/* --- Style cho trạng thái ON/OFF --- */
+.status-on,
+.status-off {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.status-on {
+  background-color: #28a745; /* Màu xanh lá */
+}
+
+.status-off {
+  background-color: #dc3545; /* Màu đỏ */
+}
