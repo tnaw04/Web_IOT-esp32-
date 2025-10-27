@@ -1,5 +1,5 @@
 const { poolPromise, sql } = require('../db');
-const mqttClient = require('../mqtt/mqttHandler'); // 1. Import MQTT client
+const mqttClient = require('../mqtt/mqttHandler'); 
 
 const getDeviceStates = async (req, res) => {
   try {
@@ -11,13 +11,11 @@ const getDeviceStates = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
-
 const getDeviceHistory = async (req, res) => {
   const { deviceName } = req.params;
-  const { page = 1, limit = 10, state, search } = req.query; // Thêm 'search'
+  const { page = 1, limit = 10, state, search } = req.query; 
 
   const offset = (page - 1) * limit;
-
   try {
     const pool = await poolPromise;
     let whereClauses = ['d.DeviceName = @DeviceName'];
@@ -62,7 +60,6 @@ const getDeviceHistory = async (req, res) => {
         FETCH NEXT ${parseInt(limit, 10)} ROWS ONLY
       `);
 
-    // Trả về dữ liệu theo cấu trúc có phân trang
     res.json({
       totalPages: totalPages,
       data: dataResult.recordset,
@@ -74,7 +71,7 @@ const getDeviceHistory = async (req, res) => {
 };
 
 const getAllDeviceHistory = async (req, res) => {
-  const { page = 1, limit = 10, state, search } = req.query; // Thêm 'search'
+  const { page = 1, limit = 10, state, search } = req.query;
   const offset = (page - 1) * limit;
 
   try {
@@ -93,12 +90,12 @@ const getAllDeviceHistory = async (req, res) => {
 
     const whereCondition = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
-    // Query 1: Đếm tổng số bản ghi trong ActionLogs
+   
     const countResult = await request.query(`SELECT COUNT(*) as total FROM ActionLogs al JOIN Devices d ON al.DeviceID = d.DeviceID ${whereCondition}`);
     const totalRecords = countResult.recordset[0].total;
     const totalPages = Math.ceil(totalRecords / limit);
 
-    // Query 2: Lấy dữ liệu đã phân trang
+   
     const dataResult = await request.query(`
       SELECT 
         d.DeviceName,
@@ -126,7 +123,7 @@ const getAllDeviceHistory = async (req, res) => {
 const toggleDeviceState = async (req, res) => {
   const { device, state } = req.body;
 
-  // Ánh xạ tên thiết bị từ frontend sang tên trong CSDL
+
   const deviceNameMapping = {
     'light': 'Light',
     'ac': 'Air Conditioner',
@@ -144,19 +141,16 @@ const toggleDeviceState = async (req, res) => {
     await transaction.begin();
     const request = new sql.Request(transaction);
 
-    // Chuẩn bị các tham số input
+    
     request
       .input('DeviceName', sql.NVarChar, dbDeviceName)
-      .input('DeviceState', sql.Bit, state) // Dùng cho bảng Devices (cột bit)
-      .input('ActionString', sql.NVarChar, state ? 'ON' : 'OFF'); // Dùng cho bảng ActionLogs (cột nvarchar)
-    
-    // CHỈ GHI LOG, KHÔNG CẬP NHẬT TRẠNG THÁI TRONG BẢNG DEVICES
-    // await request.query(`UPDATE Devices SET DeviceState = @DeviceState WHERE DeviceName = @DeviceName;`);
+      .input('DeviceState', sql.Bit, state) 
+      .input('ActionString', sql.NVarChar, state ? 'ON' : 'OFF'); 
+   
     await request.query(`INSERT INTO ActionLogs (DeviceID, Action) SELECT DeviceID, @ActionString FROM Devices WHERE DeviceName = @DeviceName;`);
 
     await transaction.commit();
 
-    // 2. Gửi lệnh điều khiển qua MQTT sau khi đã cập nhật DB thành công
     const controlTopic = process.env.MQTT_CONTROL_TOPIC || 'esp/control';
     let deviceId;
     if (device === 'light') {
