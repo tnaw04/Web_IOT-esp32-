@@ -1,17 +1,16 @@
-/* src/App.css */
 
 .App {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden; /* Ngăn cuộn ngang trên toàn bộ ứng dụng */
+  overflow-x: hidden;
   text-align: left;
 }
 
 .main-content {
-  flex-grow: 1; /* Cho phép phần nội dung chính chiếm hết không gian còn lại */
+  flex-grow: 1; 
   padding: 20px;
-  background-color: #e7f5dc; /* Màu nền xanh lá cây nhạt giống trong hình */
+  background-color: #e7f5dc; 
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -19,51 +18,51 @@
 
 .summary-cards-container {
   display: flex;
-  gap: 20px; /* Tạo khoảng cách giữa các thẻ */
-  flex-wrap: wrap; /* Cho phép các thẻ xuống dòng nếu không đủ chỗ */
-  justify-content: center; /* Center the cards */
+  gap: 20px;
+  flex-wrap: wrap; 
+  justify-content: center;
 }
 
 .dashboard-body {
   display: flex;
-  gap: 20px; /* Tạo khoảng cách giữa hai cột */
-  align-items: flex-start; /* Căn chỉnh các mục theo phía trên, ngăn kéo dài chiều cao */
+  gap: 20px; 
+  align-items: flex-start; 
   margin-top: 20px;
 }
 
 .chart-section {
-  flex-grow: 1; /* Cho phép cột biểu đồ co giãn để lấp đầy không gian */
-  min-width: 0; /* Cần thiết để flex-grow hoạt động đúng trong một số trường hợp */
+  flex-grow: 1;
+  min-width: 0; 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Vertically center the chart component */
+  justify-content: center; 
 }
 
 .controls-section {
-  flex-basis: 300px; /* Đặt chiều rộng cơ sở cho bảng điều khiển */
-  flex-shrink: 0; /* Ngăn không cho cột này co lại */
-  margin-right: 40px; /* Thêm khoảng đệm bên phải để tạo khoảng trống */
+  flex-basis: 300px; 
+  flex-shrink: 0; 
+  margin-right: 40px; 
 }
 
-/* --- Responsive Styles for Mobile Devices --- */
+
 @media (max-width: 768px) {
   .App {
-    /* Trên mobile, chúng ta không cần hiển thị sidebar và nội dung cạnh nhau nữa */
+    
     flex-direction: column;
   }
 
-  /* Giả sử Sidebar có class là .sidebar, chúng ta sẽ ẩn nó đi */
+ 
   .sidebar {
     display: none;
   }
 
   .main-content {
-    height: auto; /* Cho phép nội dung dài hơn màn hình và có thể cuộn */
+    height: auto; 
     min-height: 100vh;
   }
 
   .dashboard-body {
-    flex-direction: column; /* Xếp biểu đồ và bảng điều khiển chồng lên nhau */
-    align-items: stretch; /* Kéo dài các mục để có chiều rộng bằng nhau */
+    flex-direction: column; 
+    align-items: stretch; 
   }
 }
