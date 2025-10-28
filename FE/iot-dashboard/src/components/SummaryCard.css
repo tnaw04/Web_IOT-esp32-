@@ -1,4 +1,4 @@
-/* src/components/SummaryCard.css */
+
 
 .summary-card {
   background-color: #ffffff;
@@ -6,14 +6,14 @@
   padding: 20px;
   display: flex;
   align-items: center;
-  gap: 15px; /* Khoảng cách giữa icon và text */
+  gap: 15px; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 250px;
 }
 
 .card-icon {
   font-size: 32px;
-  /* Bạn có thể thay icon bằng hình ảnh sau này */
+  
 }
 
 .card-info {
