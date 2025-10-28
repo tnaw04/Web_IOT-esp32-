@@ -47,13 +47,13 @@
   width: 100px;
 }
 
-/* Đảm bảo bảng không giãn theo nội dung */
+
 .data-table th,
 .data-table td {
   max-width: 120px;
 }
 
-/* Thêm: tránh việc flex container ép bảng phình */
+
 .table-wrapper, .data-table-container {
   flex-shrink: 1 !important;
   flex-grow: 0 !important;
@@ -69,7 +69,7 @@
 .data-table th,
 .data-table td {
   padding: 4px 6px !important;
-  white-space: normal !important; /* Cho phép text xuống dòng */
+  white-space: normal !important; 
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -81,7 +81,7 @@
   flex-shrink: 1 !important;
 }
 
-/* Thêm style cho trạng thái Bật/Tắt trong bảng lịch sử thiết bị */
+
 .status-on, .status-off {
   padding: 4px 8px;
   border-radius: 12px;
@@ -90,9 +90,9 @@
 }
 
 .status-on {
-  background-color: #38a169; /* Green */
+  background-color: #38a169; 
 }
 
 .status-off {
-  background-color: #e53e3e; /* Red */
+  background-color: #e53e3e;
 }
