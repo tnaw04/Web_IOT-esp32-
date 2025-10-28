@@ -16,12 +16,12 @@ const DataPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState('');
-  // State mới để quản lý sắp xếp: { key: 'tên cột', direction: 'asc' | 'desc' }
-  const [sortConfig, setSortConfig] = useState({ key: 'Timestamp', direction: 'desc' });
-  const [filterCategory, setFilterCategory] = useState('all'); // State mới cho bộ lọc
-  const [itemsPerPage, setItemsPerPage] = useState(10); // State mới: số dòng mỗi trang
 
-  // Chuyển hoàn toàn sang server-side rendering
+  const [sortConfig, setSortConfig] = useState({ key: 'Timestamp', direction: 'desc' });
+  const [filterCategory, setFilterCategory] = useState('all'); 
+  const [itemsPerPage, setItemsPerPage] = useState(10); 
+
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -32,11 +32,11 @@ const DataPage = () => {
         sortOrder: sortConfig.direction,
       });
 
-      // Chỉ thêm tham số search nếu có giá trị
+     
       if (search) {
         params.append('search', search);
-        // Backend sẽ tự xử lý việc tìm kiếm trong cột nào,
-        // nên ta không cần gửi filterCategory nữa.
+ 
+
       }
 
       const response = await axios.get(`${API_URL}/api/sensors/data?${params.toString()}`);
@@ -47,45 +47,45 @@ const DataPage = () => {
     } catch (err) {
       setError('Không thể tải dữ liệu từ server.');
       console.error(err);
-      setSensorData([]); // Xóa dữ liệu cũ nếu có lỗi
+      setSensorData([]); 
       setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, sortConfig, search]); // Bỏ filterCategory, sensorData.length
+  }, [currentPage, itemsPerPage, sortConfig, search]); 
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]); // fetchData giờ đã chứa tất cả dependencies cần thiết
+  }, [fetchData]); 
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  // Hàm xử lý khi click vào tiêu đề cột để sắp xếp
+ 
   const handleSort = (key) => {
     let direction = 'asc';
-    // Nếu click lại vào cột đang sắp xếp, đảo chiều
+    
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1); // Quay về trang đầu khi sắp xếp
+    setCurrentPage(1); 
   };
 
-  // Hàm xử lý khi thay đổi số dòng mỗi trang
+ 
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Quay về trang đầu
+    setCurrentPage(1); 
   };
 
-  // Hàm xử lý khi thay đổi giá trị tìm kiếm
+  
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
-    setCurrentPage(1); // Quay về trang đầu khi tìm kiếm
+    setCurrentPage(1);
   };
 
-  // Tính toán chỉ số bắt đầu cho trang hiện tại
+  
   const startIndex = (currentPage - 1) * itemsPerPage;
 
   return (
@@ -125,8 +125,7 @@ const DataPage = () => {
       </div>
 
       <div className="table-wrapper">
-        {/* Lớp phủ loading */}
-        {loading && (
+         {loading && (
           <div className="loading-overlay">
             <div className="loading-spinner"></div>
             <span>Đang tải...</span>
@@ -135,7 +134,6 @@ const DataPage = () => {
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        {/* Luôn hiển thị bảng nếu có dữ liệu, kể cả khi đang loading */}
         {!error && sensorData.length > 0 ? (
           <>
             <DataTable data={sensorData} onSort={handleSort} sortConfig={sortConfig} startIndex={startIndex} />
