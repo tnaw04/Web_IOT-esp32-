@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ProfilePage.css';
 import { FaGithub, FaFigma, FaEnvelope, FaPhone, FaMapMarkerAlt, FaRocket, FaFilePdf, FaIdCard } from 'react-icons/fa';
-import userAvatar from '../assets/images/avatar.jpg'; // 1. Import ảnh local
+import userAvatar from '../assets/images/avatar.jpg';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 const ProfilePage = () => {
-  // State để lưu thông tin người dùng, khởi tạo với giá trị mặc định
+ 
   const [user, setUser] = useState({
     name: 'Đang tải...',
     aboutMe: '',
@@ -19,7 +19,7 @@ const ProfilePage = () => {
     figmaLink: '',
     postmanLink: '',
     pdfLink: '',
-    // 2. Sử dụng ảnh đã import làm giá trị mặc định
+  
     avatarUrl: userAvatar, 
   });
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/profile`);
-        // Thay đổi cách cập nhật state để xử lý giá trị null từ API
+   
         const apiData = response.data;
         setUser({
           name: apiData.name || 'N/A',
@@ -42,7 +42,7 @@ const ProfilePage = () => {
           figmaLink: apiData.figmaLink || '',
           postmanLink: apiData.postmanLink || '',
           pdfLink: apiData.pdfLink || '',
-          avatarUrl: userAvatar, // Luôn giữ ảnh local
+          avatarUrl: userAvatar, 
         });
       } catch (err) {
         setError('Không thể tải thông tin người dùng.');
@@ -53,8 +53,7 @@ const ProfilePage = () => {
     };
 
     fetchProfile();
-  }, []); // Mảng rỗng đảm bảo useEffect chỉ chạy một lần
-
+  }, []); 
   return (
     <div className="profile-page">
       <h1>Thông tin cá nhân</h1>
