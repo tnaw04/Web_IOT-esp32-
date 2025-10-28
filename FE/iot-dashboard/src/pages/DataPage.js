@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import axios from 'axios';
 import DataTable from '../components/DataTable';
 import Pagination from '../components/Pagination';
 import './DataPage.css';
 import { FaSearch } from 'react-icons/fa';
-import { format } from 'date-fns';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
