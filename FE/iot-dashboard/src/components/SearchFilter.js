@@ -5,7 +5,7 @@ const SearchFilter = ({ onSearch }) => {
   const [query, setQuery] = useState('');
 
   const handleSearch = (e) => {
-    e.preventDefault(); // Ngăn form submit và tải lại trang
+    e.preventDefault();
     onSearch(query);
   };
 
