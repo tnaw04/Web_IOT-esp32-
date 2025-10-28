@@ -1,9 +1,7 @@
-// src/components/SummaryCard.js
 
-import React from 'react';
 import './SummaryCard.css';
 
-// Component này nhận vào các "props" để hiển thị dữ liệu khác nhau
+
 const SummaryCard = ({ title, value, icon }) => {
   return (
     <div className="summary-card">
