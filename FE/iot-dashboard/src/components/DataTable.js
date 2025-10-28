@@ -7,9 +7,9 @@ const DataTable = ({ data, onSort, sortConfig, startIndex = 0 }) => {
     return <p className="no-data-message">Không có dữ liệu để hiển thị.</p>;
   }
 
-  // Hàm để xác định class CSS cho tiêu đề cột
+
   const getSortableClasses = (key) => {
-    if (!onSort || !sortConfig) return ''; // Không thể sắp xếp nếu thiếu props
+    if (!onSort || !sortConfig) return '';
 
     let className = 'sortable';
     if (sortConfig.key === key) {
