@@ -3,7 +3,7 @@ import './Pagination.css';
 
 const Pagination = ({ currentPage, totalPages, onPageChange, maxPagesToShow = 5 }) => {
   if (totalPages <= 1) {
-    return null; // Không hiển thị phân trang nếu chỉ có 1 trang
+    return null; 
   }
 
   const getPageNumbers = () => {
@@ -13,7 +13,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, maxPagesToShow = 5 
     let startPage = Math.max(1, currentPage - halfPages);
     let endPage = Math.min(totalPages, currentPage + halfPages);
 
-    // Điều chỉnh nếu khoảng trang không đủ maxPagesToShow
+
     if (endPage - startPage + 1 < maxPagesToShow) {
       if (currentPage < totalPages / 2) {
         endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
