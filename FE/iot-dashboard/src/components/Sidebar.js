@@ -1,9 +1,7 @@
 // src/components/Sidebar.js
 
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink} from 'react-router-dom';
 import './Sidebar.css';
-import { FaTachometerAlt, FaTable, FaUserCircle, FaHistory, FaBolt } from 'react-icons/fa';
 
 function Sidebar() {
   return (
