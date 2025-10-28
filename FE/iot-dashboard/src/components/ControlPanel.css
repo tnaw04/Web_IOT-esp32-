@@ -3,9 +3,9 @@
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it fills the container */
-    max-width: 350px; /* Giới hạn chiều rộng tối đa */
-    height: max-content; /* Fit the height to the content */
+    width: 100%; 
+    max-width: 350px; 
+    height: max-content; 
 }
 
 .control-panel h2 {
@@ -38,7 +38,6 @@
     font-size: 1.2rem;
 }
 
-/* Toggle Switch styles */
 .switch {
     position: relative;
     display: inline-block;
@@ -90,7 +89,6 @@ input:checked+.slider:before {
     transform: translateX(26px);
 }
 
-/* Rounded sliders */
 .slider.round {
     border-radius: 34px;
 }
