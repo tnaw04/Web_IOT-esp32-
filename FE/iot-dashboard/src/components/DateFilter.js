@@ -5,7 +5,7 @@ const DateFilter = ({ onFilterApply }) => {
   const [endDate, setEndDate] = useState('');
 
   const handleApply = () => {
-    // Chỉ gọi filter nếu có ít nhất một ngày được chọn
+   
     if (startDate || endDate) {
       onFilterApply({ startDate, endDate });
     }
@@ -14,7 +14,7 @@ const DateFilter = ({ onFilterApply }) => {
   const handleClear = () => {
     setStartDate('');
     setEndDate('');
-    // Gọi filter với giá trị null để xóa bộ lọc
+
     onFilterApply({ startDate: null, endDate: null });
   };
 
