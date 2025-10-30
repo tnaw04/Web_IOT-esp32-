@@ -92,7 +92,8 @@ const DashboardPage = () => {
   }, []);
 
   useEffect(() => {
- 
+    document.title = 'IoT Web';
+
     fetchInitialDeviceStates();
     fetchHistoricalData();
 
@@ -148,7 +149,7 @@ const DashboardPage = () => {
         <SummaryCard
           title="Humidity"
           value={`${latestData.humidity}%`}
-          icon={<FaTint style={{ color: '#64b5f6' }} />}
+          icon={<FaTint style={{ color: '#64b5f6' }} />}git
         />
       </div>
 

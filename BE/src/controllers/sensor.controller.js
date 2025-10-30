@@ -116,7 +116,7 @@ const getSensorData = async (req, res) => {
             WITH PivotedData AS (
                 SELECT
                     -- Định dạng thời gian thành chuỗi ngay tại CSDL để tránh các vấn đề về múi giờ
-                    FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
+                    FORMAT(DATEADD(hour, 7, sd.recorded_at), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
                     ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS temperature,
                     ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS humidity,
                     ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS luminosity
@@ -168,7 +168,7 @@ const getLatestSensorData = async (req, res) => {
         
         const query = `
             SELECT TOP 1
-                FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
+                FORMAT(DATEADD(hour, 7, sd.recorded_at), 'HH:mm:ss') AS time,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
@@ -195,7 +195,7 @@ const getHistoricalSensorData = async (req, res) => {
         const query = `
             SELECT * FROM (
                 SELECT TOP 50
-                    FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
+                    FORMAT(DATEADD(hour, 7, sd.recorded_at), 'HH:mm:ss') AS time,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity

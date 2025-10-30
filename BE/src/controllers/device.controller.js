@@ -29,7 +29,7 @@ const getDeviceHistory = async (req, res) => {
       whereClauses.push(`(
         d.DeviceName LIKE @SearchTerm OR 
         al.Action LIKE @SearchTerm OR 
-        FORMAT(al.Timestamp, 'dd/MM/yyyy HH:mm:ss') LIKE @SearchTerm
+        FORMAT(DATEADD(hour, 7, al.Timestamp), 'dd/MM/yyyy HH:mm:ss') LIKE @SearchTerm
       )`);
       request.input('SearchTerm', sql.NVarChar, `%${search}%`);
     }
@@ -84,7 +84,7 @@ const getAllDeviceHistory = async (req, res) => {
       request.input('State', sql.NVarChar, state);
     }
     if (search) {
-      whereClauses.push(`(d.DeviceName LIKE @SearchTerm OR al.Action LIKE @SearchTerm OR FORMAT(al.Timestamp, 'dd/MM/yyyy HH:mm:ss') LIKE @SearchTerm)`);
+      whereClauses.push(`(d.DeviceName LIKE @SearchTerm OR al.Action LIKE @SearchTerm OR FORMAT(DATEADD(hour, 7, al.Timestamp), 'dd/MM/yyyy HH:mm:ss') LIKE @SearchTerm)`);
       request.input('SearchTerm', sql.NVarChar, `%${search}%`);
     }
 
