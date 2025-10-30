@@ -34,8 +34,9 @@ const DataPage = () => {
      
       if (search) {
         params.append('search', search);
- 
-
+        if (filterCategory) {
+          params.append('filterCategory', filterCategory);
+        }
       }
 
       const response = await axios.get(`${API_URL}/api/sensors/data?${params.toString()}`);
@@ -51,11 +52,11 @@ const DataPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, sortConfig, search]); 
+  }, [currentPage, itemsPerPage, sortConfig, search, filterCategory]); 
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]); 
+  }, [fetchData]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

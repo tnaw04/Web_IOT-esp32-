@@ -68,7 +68,8 @@ const getSensorData = async (req, res) => {
         sortOrder = 'desc',
         startDate,
         endDate,
-        search 
+        search,
+        filterCategory = 'all'
     } = req.query;
 
     
@@ -103,11 +104,25 @@ const getSensorData = async (req, res) => {
         let postPivotWhere = '';
         if (search) {
             postPivotWhere = `
-                WHERE CAST(temperature AS VARCHAR(20)) LIKE @searchTerm
-                   OR CAST(humidity AS VARCHAR(20)) LIKE @searchTerm
-                   OR CAST(luminosity AS VARCHAR(20)) LIKE @searchTerm
-                   OR FORMAT(CAST(Timestamp AS DATETIME2(0)), 'dd/MM/yyyy HH:mm:ss') LIKE @searchTerm
-            `;
+                WHERE 1=1 AND (${
+                    (() => {
+                        const searchConditions = [];
+                        if (filterCategory === 'all' || filterCategory === 'temperature') {
+                            searchConditions.push(`FORMAT(temperature, 'F2') LIKE @searchTerm`);
+                        }
+                        if (filterCategory === 'all' || filterCategory === 'humidity') {
+                            searchConditions.push(`FORMAT(humidity, 'F2') LIKE @searchTerm`);
+                        }
+                        if (filterCategory === 'all' || filterCategory === 'luminosity') {
+                            searchConditions.push(`FORMAT(luminosity, 'F2') LIKE @searchTerm`);
+                        }
+                        if (filterCategory === 'all') {
+                            searchConditions.push(`FORMAT(CAST(Timestamp AS DATETIME2(0)), 'dd/MM/yyyy HH:mm:ss') LIKE @searchTerm`);
+                        }
+                        return searchConditions.join(' OR ');
+                    })()
+                })
+            `
             request.input('searchTerm', sql.NVarChar, `%${search}%`);
         }
 
@@ -115,11 +130,11 @@ const getSensorData = async (req, res) => {
         const pivotQuery = `
             WITH PivotedData AS (
                 SELECT
-                    -- Định dạng thời gian thành chuỗi ngay tại CSDL để tránh các vấn đề về múi giờ
-                    FORMAT(DATEADD(hour, 7, sd.recorded_at), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
+                    -- Biểu thức trong SELECT và GROUP BY cho cột timestamp phải nhất quán.
+                    FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
                     ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS temperature,
                     ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS humidity,
-                    ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS luminosity
+                    CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
                 FROM SensorData sd
                 JOIN Sensor s ON sd.sensor_id = s.sensor_id
                 ${whereCondition}
@@ -166,9 +181,10 @@ const getLatestSensorData = async (req, res) => {
         const pool = await poolPromise;
 
         
+    
         const query = `
             SELECT TOP 1
-                FORMAT(DATEADD(hour, 7, sd.recorded_at), 'HH:mm:ss') AS time,
+                FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'HH:mm:ss') AS time,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
@@ -195,7 +211,8 @@ const getHistoricalSensorData = async (req, res) => {
         const query = `
             SELECT * FROM (
                 SELECT TOP 50
-                    FORMAT(DATEADD(hour, 7, sd.recorded_at), 'HH:mm:ss') AS time,
+                    -- Biểu thức trong SELECT và GROUP BY cho cột timestamp phải nhất quán.
+                    FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'HH:mm:ss') AS time,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
