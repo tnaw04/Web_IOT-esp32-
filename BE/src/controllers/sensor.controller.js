@@ -131,7 +131,7 @@ const getSensorData = async (req, res) => {
             WITH PivotedData AS (
                 SELECT
                     -- Biểu thức trong SELECT và GROUP BY cho cột timestamp phải nhất quán.
-                    FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
+                    FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
                     ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS temperature,
                     ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS humidity,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
@@ -184,7 +184,7 @@ const getLatestSensorData = async (req, res) => {
     
         const query = `
             SELECT TOP 1
-                FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'HH:mm:ss') AS time,
+                FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
@@ -212,7 +212,7 @@ const getHistoricalSensorData = async (req, res) => {
             SELECT * FROM (
                 SELECT TOP 50
                     -- Biểu thức trong SELECT và GROUP BY cho cột timestamp phải nhất quán.
-                    FORMAT(DATEADD(hour, 7, CAST(sd.recorded_at AS DATETIME2(0))), 'HH:mm:ss') AS time,
+                    FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
