@@ -8,7 +8,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
-const char* mqtt_server = "192.168.1.55";
+const char* mqtt_server = "172.11.112.108";
 const char* mqtt_user = "espuser";
 const char* mqtt_pass = "123456";
 
