@@ -112,6 +112,7 @@ const DataPage = () => {
             <option value="temperature">Nhiệt độ</option>
             <option value="humidity">Độ ẩm</option>
             <option value="luminosity">Ánh sáng</option>
+            <option value="dust">Bụi</option>
           </select>
         </div>
         <div className="items-per-page-box">

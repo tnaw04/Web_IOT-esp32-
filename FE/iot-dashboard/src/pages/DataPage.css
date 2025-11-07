@@ -216,22 +216,31 @@
 
 .data-table th:nth-child(2),
 .data-table td:nth-child(2) {
-  min-width: 180px;
-  white-space: nowrap !important;
   text-align: center;
 }
 
 
 .data-table th:nth-child(3),
-.data-table td:nth-child(3),
 .data-table th:nth-child(4),
-.data-table td:nth-child(4),
 .data-table th:nth-child(5),
-.data-table td:nth-child(5) {
-  width: 150px;
+.data-table th:nth-child(6) {
+  width: 120px; 
   text-align: center;
 }
 
+.data-table td:nth-child(3),
+.data-table td:nth-child(4),
+.data-table td:nth-child(5),
+.data-table td:nth-child(6) {
+  text-align: center;
+}
+
+.data-table th:nth-child(7),
+.data-table td:nth-child(7) {
+  width: 200px; 
+  white-space: nowrap !important;
+  text-align: center;
+}
 
 .data-table th.sorted-asc::before,
 .data-table th.sorted-desc::after {

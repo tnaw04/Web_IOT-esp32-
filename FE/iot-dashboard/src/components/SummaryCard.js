@@ -2,9 +2,14 @@
 import './SummaryCard.css';
 
 
-const SummaryCard = ({ title, value, icon }) => {
+
+const SummaryCard = ({ title, value, icon, isAlerting }) => {
+  
+  
+  const cardClassName = `summary-card ${isAlerting ? 'alert' : ''}`;
+
   return (
-    <div className="summary-card">
+    <div className={cardClassName}> 
       <div className="card-icon">{icon}</div>
       <div className="card-info">
         <p className="card-title">{title}</p>
