@@ -30,21 +30,79 @@ const createSensorData = async (data) => {
         await transaction.begin();
 
         try {
-            
             for (const key in data) {
                 if (sensorMapping[key]) {
                     const sensor_id = sensorMapping[key];
                     const value = data[key];
 
+                    // 1. Chèn dữ liệu cảm biến
                     const request = new sql.Request(transaction);
                     await request
-                        .input('sensor_id', sql.Int, sensor_id)
-                        .input('value', sql.Real, value)
-                      
+                        .input('sensor_id_insert', sql.Int, sensor_id)
+                        .input('value_insert', sql.Real, value)
                         .query(`
                             INSERT INTO SensorData (sensor_id, value, recorded_at)
-                            VALUES (@sensor_id, @value, DATEADD(hour, 7, GETUTCDATE()))
+                            VALUES (@sensor_id_insert, @value_insert, DATEADD(hour, 7, GETUTCDATE()))
                         `);
+
+                    // 2. Logic cập nhật bộ đếm (CHỈ DÀNH CHO 'dust')
+                    if (key === 'dust') {
+                        const isNowAlerting = (value > 50);
+
+                        // Lấy trạng thái cũ
+                        const stateRequest = new sql.Request(transaction);
+                        const stateResult = await stateRequest
+                            .input('sensor_id_state', sql.Int, sensor_id)
+                            .query('SELECT IsCurrentlyAlerting FROM Sensor WHERE sensor_id = @sensor_id_state');
+                        
+                        // Đảm bảo rằng stateResult trả về kết quả
+                        if (stateResult.recordset.length > 0) {
+                            const wasAlerting = stateResult.recordset[0].IsCurrentlyAlerting;
+                            const updateRequest = new sql.Request(transaction);
+
+                            // Kịch bản 1: MỚI VƯỢT NGƯỠNG
+                            if (isNowAlerting && !wasAlerting) {
+                                // Logic kiểm tra ngày
+                                await updateRequest
+                                    .input('sensor_id_update', sql.Int, sensor_id)
+                                    .query(`
+                                        DECLARE @CurrentVietnamDate date = CAST(DATEADD(hour, 7, GETUTCDATE()) AS date);
+                                        DECLARE @LastUpdate date;
+                                        SELECT @LastUpdate = AlertCountLastUpdated FROM Sensor WHERE sensor_id = @sensor_id_update;
+
+                                        IF @LastUpdate IS NULL OR @LastUpdate != @CurrentVietnamDate
+                                        BEGIN
+                                            -- Ngày mới: Reset count = 1
+                                            UPDATE Sensor
+                                            SET
+                                                AlertCount = 1,
+                                                IsCurrentlyAlerting = 1,
+                                                AlertCountLastUpdated = @CurrentVietnamDate
+                                            WHERE sensor_id = @sensor_id_update;
+                                        END
+                                        ELSE
+                                        BEGIN
+                                            -- Cùng ngày: Tăng count
+                                            UPDATE Sensor
+                                            SET
+                                                AlertCount = AlertCount + 1,
+                                                IsCurrentlyAlerting = 1
+                                            WHERE sensor_id = @sensor_id_update;
+                                        END
+                                    `);
+                            }
+                            // Kịch bản 2: TRỞ LẠI AN TOÀN
+                            else if (!isNowAlerting && wasAlerting) {
+                                await updateRequest
+                                    .input('sensor_id_update', sql.Int, sensor_id)
+                                    .query(`
+                                        UPDATE Sensor 
+                                        SET IsCurrentlyAlerting = 0 
+                                        WHERE sensor_id = @sensor_id_update
+                                    `);
+                            }
+                        }
+                    }
                 }
             }
             await transaction.commit();
@@ -73,7 +131,7 @@ const getSensorData = async (req, res) => {
     } = req.query;
 
     
-    const allowedSortKeys = ['Timestamp', 'temperature', 'humidity', 'luminosity'];
+    const allowedSortKeys = ['Timestamp', 'temperature', 'humidity', 'luminosity', 'dust'];
     const safeSortKey = allowedSortKeys.includes(sortKey) ? sortKey : 'Timestamp';
     const safeSortOrder = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
@@ -116,6 +174,9 @@ const getSensorData = async (req, res) => {
                         if (filterCategory === 'all' || filterCategory === 'luminosity') {
                             searchConditions.push(`FORMAT(luminosity, 'F2') LIKE @searchTerm`);
                         }
+                        if (filterCategory === 'all' || filterCategory === 'dust') {
+                            searchConditions.push(`FORMAT(dust, 'F2') LIKE @searchTerm`);
+                        }
                         if (filterCategory === 'all') {
                             searchConditions.push(`FORMAT(CAST(Timestamp AS DATETIME2(0)), 'dd/MM/yyyy HH:mm:ss') LIKE @searchTerm`);
                         }
@@ -134,7 +195,8 @@ const getSensorData = async (req, res) => {
                     FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'yyyy-MM-dd HH:mm:ss') AS Timestamp,
                     ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS temperature,
                     ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS humidity,
-                    CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
+                    CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity,
+                    CAST(ISNULL(MAX(CASE WHEN s.type = 'dust' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS dust
                 FROM SensorData sd
                 JOIN Sensor s ON sd.sensor_id = s.sensor_id
                 ${whereCondition}
@@ -187,7 +249,8 @@ const getLatestSensorData = async (req, res) => {
                 FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                 CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
-                CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
+                CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity,
+                CAST(ISNULL(MAX(CASE WHEN s.type = 'dust' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS dust
             FROM SensorData sd
             JOIN Sensor s ON sd.sensor_id = s.sensor_id
             GROUP BY CAST(sd.recorded_at AS DATETIME2(0))
@@ -215,7 +278,8 @@ const getHistoricalSensorData = async (req, res) => {
                     FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'temperature' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS temperature,
                     CAST(ISNULL(MAX(CASE WHEN s.type = 'humidity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS humidity,
-                    CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity
+                    CAST(ISNULL(MAX(CASE WHEN s.type = 'luminosity' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS luminosity,
+                    CAST(ISNULL(MAX(CASE WHEN s.type = 'dust' THEN sd.value END), 0) AS DECIMAL(10, 2)) AS dust
                 FROM SensorData sd
                 JOIN Sensor s ON sd.sensor_id = s.sensor_id
                 GROUP BY CAST(sd.recorded_at AS DATETIME2(0))
@@ -234,6 +298,30 @@ const getHistoricalSensorData = async (req, res) => {
     }
 };
 
+const getAlertCount = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('type', sql.NVarChar, 'dust')
+            .query(`
+                DECLARE @CurrentVietnamDate date = CAST(DATEADD(hour, 7, GETUTCDATE()) AS date);
+                SELECT 
+                    CASE 
+                        -- Nếu ngày cập nhật cuối là hôm nay, trả về AlertCount
+                        WHEN AlertCountLastUpdated = @CurrentVietnamDate THEN AlertCount 
+                        -- Ngược lại, trả về 0
+                        ELSE 0 
+                    END AS AlertCountToday
+                FROM Sensor 
+                WHERE type = @type
+            `);
+        
+        res.json({ AlertCount: result.recordset[0]?.AlertCountToday || 0 });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+};
+
 
 module.exports = {
     createSensorData,
@@ -241,4 +329,5 @@ module.exports = {
     loadSensorMapping,
     getLatestSensorData,
     getHistoricalSensorData,
+    getAlertCount,
 };

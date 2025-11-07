@@ -66,3 +66,36 @@
     align-items: stretch; 
   }
 }
+.alert-counter-box {
+ 
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  
+ 
+  margin: 20px 20px 15px 20px; 
+  padding: 12px 20px; 
+
+  display: flex;
+  justify-content: center; /* <-- SỬA DÒNG NÀY (từ space-between) */
+  align-items: center; 
+}
+
+.alert-counter-text {
+  font-size: 1.1em; 
+  font-weight: 600;
+  color: #333;
+}
+
+.alert-counter-text strong {
+  color: #d32f2f; 
+  font-size: 1.2em;
+  margin-left: 8px; /* Thêm khoảng cách cho đẹp */
+}
+
+
+.data-table td.dust-alert {
+  background-color: #b71c1c;
+  color: #ffffff; 
+  font-weight: bold;
+}

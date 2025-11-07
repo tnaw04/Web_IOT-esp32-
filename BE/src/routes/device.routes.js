@@ -7,8 +7,6 @@ const {
   toggleDeviceState,
 } = require('../controllers/device.controller');
 
-// Route để lấy trạng thái hiện tại của tất cả các thiết bị
-// Route này phải được đặt trước các route động (với tham số) để được ưu tiên
 router.get('/states', getDeviceStates);
 
 // Route để lấy lịch sử của TẤT CẢ thiết bị

@@ -157,7 +157,7 @@ const toggleDeviceState = async (req, res) => {
       deviceId = 1;
     } else if (device === 'ac') {
       deviceId = 2;
-    } else if (device === 'fan') {
+    } else if (device === 'fan') {5604
       deviceId = 3;
     }
 
