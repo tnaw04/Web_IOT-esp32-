@@ -1,5 +1,4 @@
 
-
 .summary-card {
   background-color: #ffffff;
   border-radius: 12px;
@@ -8,7 +7,7 @@
   align-items: center;
   gap: 15px; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 250px;
+  width: 200px;
 }
 
 .card-icon {
@@ -31,4 +30,22 @@
   font-size: 24px;
   font-weight: bold;
   color: #333;
+}
+
+.summary-card.alert {
+  
+  animation: blink-animation 1s infinite; 
+  border-color: #e00606; 
+}
+
+@keyframes blink-animation {
+  0% {
+    background-color: #fff;
+  }
+  50% {
+    background-color: #ffebee; 
+  }
+  100% {
+    background-color: #fff;
+  }
 }

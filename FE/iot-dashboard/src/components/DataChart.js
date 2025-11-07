@@ -34,9 +34,10 @@ const DataChart = ({ data = sampleData }) => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="temperature" stroke="red" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="temperature" stroke="orange" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="humidity" stroke="blue" />
           <Line type="monotone" dataKey="luminosity" stroke="gold" />
+          <Line type="monotone" dataKey="dust" stroke="red" />
         </LineChart>
       </ResponsiveContainer>
     </div>

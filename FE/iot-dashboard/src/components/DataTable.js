@@ -24,9 +24,6 @@ const DataTable = ({ data, onSort, sortConfig, startIndex = 0 }) => {
         <thead>
           <tr>
             <th style={{ width: '60px' }}>STT</th>
-            <th className={getSortableClasses('Timestamp')} onClick={() => onSort && onSort('Timestamp')}>
-              Thời gian
-            </th>
             <th className={getSortableClasses('temperature')} onClick={() => onSort && onSort('temperature')}>
               Nhiệt độ (°C)
             </th>
@@ -36,18 +33,25 @@ const DataTable = ({ data, onSort, sortConfig, startIndex = 0 }) => {
             <th className={getSortableClasses('luminosity')} onClick={() => onSort && onSort('luminosity')}>
               Ánh sáng (lux)
             </th>
+            <th className={getSortableClasses('dust')} onClick={() => onSort && onSort('dust')}>
+              Độ Bụi (µg/m³)
+            </th>
+            <th className={getSortableClasses('Timestamp')} onClick={() => onSort && onSort('Timestamp')}>
+              Thời gian
+            </th>
           </tr>
         </thead>
         <tbody>
           {data.map((row, index) => (
             <tr key={row.Timestamp + index}>
               <td>{startIndex + index + 1}</td>
-              <td>
-                {format(new Date(row.Timestamp), 'dd/MM/yyyy HH:mm:ss')}
-              </td>
               <td>{row.temperature?.toFixed(2) ?? 'N/A'}</td>
               <td>{row.humidity?.toFixed(2) ?? 'N/A'}</td>
               <td>{row.luminosity ?? 'N/A'}</td>
+              <td>{row.dust?.toFixed(2) ?? 'N/A'}</td> 
+              <td>
+                {format(new Date(row.Timestamp), 'dd/MM/yyyy HH:mm:ss')}
+              </td>
             </tr>
           ))}
         </tbody>

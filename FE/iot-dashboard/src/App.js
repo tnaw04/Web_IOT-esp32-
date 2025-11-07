@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
@@ -6,7 +6,7 @@ import Sidebar from './components/Sidebar';
 import SummaryCard from './components/SummaryCard';
 import ControlPanel from './components/ControlPanel';
 import DataChart from './components/DataChart';
-import { FaThermometerHalf, FaSun, FaTint } from 'react-icons/fa';
+import { FaThermometerHalf, FaSun, FaTint, FaSmog } from 'react-icons/fa';
 import DataPage from './pages/DataPage';
 import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
@@ -19,10 +19,14 @@ const DashboardPage = () => {
     temperature: '--',
     humidity: '--',
     luminosity: '--',
+    dust: '--', 
   });
 
   const [chartData, setChartData] = useState([]);
   const [devices, setDevices] = useState({ light: false, ac: false, fan: false });
+
+  const [dustAlertCount, setDustAlertCount] = useState(0);
+  const [isDustAlerting, setIsDustAlerting] = useState(false);
 
   const [togglingDevices, setTogglingDevices] = useState({
     light: false, ac: false, fan: false
@@ -50,13 +54,29 @@ const DashboardPage = () => {
       const res = await axios.get(`${API_URL}/api/sensors/historical`);
       const data = res.data;
       if (data?.length) {
+        const latestRecord = data[data.length - 1];
+        const formattedData = {
+          time: latestRecord.time,
+          temperature: Number(latestRecord.temperature),
+          humidity: Number(latestRecord.humidity),
+          luminosity: Number(latestRecord.luminosity),
+          dust: Number(latestRecord.dust) 
+        };
+
         setChartData(data);
-        setLatestData(data[data.length - 1]);
+        setLatestData(formattedData);
+       
+        
+        if (formattedData.dust && formattedData.dust > 50) {
+          setIsDustAlerting(true); 
+        } else {
+          setIsDustAlerting(false); 
+        }
       }
     } catch (err) {
       console.error(' Failed to fetch historical data:', err);
     }
-  }, []);
+  }, [isDustAlerting]);
 
 
   const fetchLatestData = useCallback(async () => {
@@ -71,7 +91,8 @@ const DashboardPage = () => {
         time: newRecord.time,
         temperature: Number(newRecord.temperature),
         humidity: Number(newRecord.humidity),
-        luminosity: Number(newRecord.luminosity)
+        luminosity: Number(newRecord.luminosity),
+        dust: Number(newRecord.dust) 
       };
   
       setChartData(prev => {
@@ -85,9 +106,24 @@ const DashboardPage = () => {
   
     
       setLatestData(formattedData);
+      
+      if (formattedData.dust && formattedData.dust > 50) {
+        setIsDustAlerting(true); 
+      } else {
+        setIsDustAlerting(false); 
+      }
   
     } catch (err) {
       console.error('Lỗi khi lấy dữ liệu:', err);
+    }
+  }, [isDustAlerting]);
+
+  const fetchAlertCount = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/sensors/alerts`);
+      setDustAlertCount(res.data.AlertCount);
+    } catch (err) {
+      console.error('Failed to fetch alert count:', err);
     }
   }, []);
 
@@ -96,17 +132,18 @@ const DashboardPage = () => {
 
     fetchInitialDeviceStates();
     fetchHistoricalData();
-
+    fetchAlertCount(); 
 
     const deviceStateInterval = setInterval(fetchInitialDeviceStates, 2000); 
     const sensorDataInterval = setInterval(fetchLatestData, 3000); 
-
+    const alertCountInterval = setInterval(fetchAlertCount, 5000); 
 
     return () => {
       clearInterval(deviceStateInterval);
       clearInterval(sensorDataInterval);
+      clearInterval(alertCountInterval); 
     };
-  }, [fetchInitialDeviceStates, fetchHistoricalData, fetchLatestData]);
+  }, [fetchInitialDeviceStates, fetchHistoricalData, fetchLatestData, fetchAlertCount]);
 
 
   const handleDeviceToggle = async (deviceName) => {
@@ -149,11 +186,26 @@ const DashboardPage = () => {
         <SummaryCard
           title="Humidity"
           value={`${latestData.humidity}%`}
-          icon={<FaTint style={{ color: '#64b5f6' }} />}git
+          icon={<FaTint style={{ color: '#64b5f6' }} />}
+        />
+
+        <SummaryCard
+          title="Dust"
+          value={`${latestData.dust} µg/m³`}
+          icon={<FaSmog style={{ color: '#9e9e9e' }} />}
+          isAlerting={isDustAlerting} 
         />
       </div>
 
-      {/* Biểu đồ + bảng điều khiển */}
+      
+      {/* Yêu cầu 3a: Box đếm số lượt */}
+      <div className="alert-counter-box">
+        <span className="alert-counter-text">
+          Số lượt cảnh báo bụi (hôm nay): <strong>{dustAlertCount}</strong>
+        </span>
+      </div>
+      
+      
       <div className="dashboard-body">
         <div className="chart-section">
           <DataChart data={chartData} />
