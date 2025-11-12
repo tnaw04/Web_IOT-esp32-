@@ -30,12 +30,12 @@ const createSensorData = async (data) => {
         await transaction.begin();
 
         try {
-            for (const key in data) {
+            for (const key in data) 
+            {
                 if (sensorMapping[key]) {
                     const sensor_id = sensorMapping[key];
                     const value = data[key];
 
-                    // 1. Chèn dữ liệu cảm biến
                     const request = new sql.Request(transaction);
                     await request
                         .input('sensor_id_insert', sql.Int, sensor_id)
@@ -45,24 +45,24 @@ const createSensorData = async (data) => {
                             VALUES (@sensor_id_insert, @value_insert, DATEADD(hour, 7, GETUTCDATE()))
                         `);
 
-                    // 2. Logic cập nhật bộ đếm (CHỈ DÀNH CHO 'dust')
+                    
                     if (key === 'dust') {
                         const isNowAlerting = (value > 50);
 
-                        // Lấy trạng thái cũ
+                        
                         const stateRequest = new sql.Request(transaction);
                         const stateResult = await stateRequest
                             .input('sensor_id_state', sql.Int, sensor_id)
                             .query('SELECT IsCurrentlyAlerting FROM Sensor WHERE sensor_id = @sensor_id_state');
                         
-                        // Đảm bảo rằng stateResult trả về kết quả
+                      
                         if (stateResult.recordset.length > 0) {
                             const wasAlerting = stateResult.recordset[0].IsCurrentlyAlerting;
                             const updateRequest = new sql.Request(transaction);
 
-                            // Kịch bản 1: MỚI VƯỢT NGƯỠNG
+                         
                             if (isNowAlerting && !wasAlerting) {
-                                // Logic kiểm tra ngày
+                                
                                 await updateRequest
                                     .input('sensor_id_update', sql.Int, sensor_id)
                                     .query(`
@@ -91,7 +91,6 @@ const createSensorData = async (data) => {
                                         END
                                     `);
                             }
-                            // Kịch bản 2: TRỞ LẠI AN TOÀN
                             else if (!isNowAlerting && wasAlerting) {
                                 await updateRequest
                                     .input('sensor_id_update', sql.Int, sensor_id)
@@ -103,6 +102,7 @@ const createSensorData = async (data) => {
                             }
                         }
                     }
+                     
                 }
             }
             await transaction.commit();
@@ -299,29 +299,25 @@ const getHistoricalSensorData = async (req, res) => {
 };
 
 const getAlertCount = async (req, res) => {
-    try {
+     try {
         const pool = await poolPromise;
-        const result = await pool.request()
-            .input('type', sql.NVarChar, 'dust')
-            .query(`
-                DECLARE @CurrentVietnamDate date = CAST(DATEADD(hour, 7, GETUTCDATE()) AS date);
-                SELECT 
-                    CASE 
-                        -- Nếu ngày cập nhật cuối là hôm nay, trả về AlertCount
-                        WHEN AlertCountLastUpdated = @CurrentVietnamDate THEN AlertCount 
-                        -- Ngược lại, trả về 0
-                        ELSE 0 
-                    END AS AlertCountToday
-                FROM Sensor 
-                WHERE type = @type
-            `);
-        
-        res.json({ AlertCount: result.recordset[0]?.AlertCountToday || 0 });
+         const result = await pool.request()
+         .query(`
+            DECLARE @CurrentVietnamDate date = CAST(DATEADD(hour, 7, GETUTCDATE()) AS date);
+            SELECT 
+            type, 
+            CASE 
+            WHEN AlertCountLastUpdated = @CurrentVietnamDate THEN AlertCount 
+            ELSE 0 
+            END AS AlertCountToday
+            FROM Sensor 
+             `);
+
+    res.json(result.recordset);
     } catch (err) {
-        res.status(500).send(err.message);
+    res.status(500).send(err.message);
     }
 };
-
 
 module.exports = {
     createSensorData,

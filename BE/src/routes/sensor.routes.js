@@ -4,7 +4,6 @@ const router = express.Router();
 
 const { getSensorData, getLatestSensorData, getHistoricalSensorData, getAlertCount } = require('../controllers/sensor.controller');
 
-
 router.get('/data', getSensorData);
 
 
