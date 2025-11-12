@@ -105,7 +105,7 @@
 .detail-content {
   display: flex;
   align-items: center;
-  gap: 8px; /* Tạo khoảng cách giữa label và value */
+  gap: 8px; 
 }
 
 .detail-item strong {
