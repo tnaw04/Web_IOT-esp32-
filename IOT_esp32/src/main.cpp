@@ -8,7 +8,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
-const char* mqtt_server = "172.11.112.108";
+const char* mqtt_server = "172.11.188.216";
 const char* mqtt_user = "espuser";
 const char* mqtt_pass = "123456";
 
@@ -26,6 +26,7 @@ DHT dht(DHTPIN,DHTTYPE);
 #define RELAY1 25
 #define RELAY2 33
 #define RELAY3 32
+#define LED_Bui 23
 
 const char* RELAY1_STATUS_TOPIC = "esp/status/relay1";
 const char* RELAY2_STATUS_TOPIC = "esp/status/relay2";
@@ -107,6 +108,9 @@ void setup()
     pinMode(RELAY2,OUTPUT);
     pinMode(RELAY3,OUTPUT);
 
+    pinMode(LED_Bui, OUTPUT);
+    digitalWrite(LED_Bui, LOW);
+
     
     preferences.begin("relay-states", false); 
     digitalWrite(RELAY1, preferences.getUChar("relay1", LOW)); 
@@ -143,11 +147,20 @@ void loop()
     float temp = dht.readTemperature();
     float hum = dht.readHumidity();
 
+    float dust = random(0, 101);    
+
     JsonDocument doc;
 
+   if (dust > 50) {
+    digitalWrite(LED_Bui, HIGH); // Bật đèn SÁNG LIÊN TỤC
+  } else {
+    digitalWrite(LED_Bui, LOW); // Tắt đèn
+  }
+    
     doc["temperature"] = temp;
     doc["humidity"] = hum;
-    doc["luminosity"] = lux;    
+    doc["luminosity"] = lux;
+    doc["dust"] = dust;
 
     char payload[256];
     serializeJson(doc, payload);
