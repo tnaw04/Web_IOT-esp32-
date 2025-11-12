@@ -28,6 +28,9 @@ const DashboardPage = () => {
   const [dustAlertCount, setDustAlertCount] = useState(0);
   const [isDustAlerting, setIsDustAlerting] = useState(false);
 
+  const [tempAlertCount, setTempAlertCount] = useState(0);
+  const [isTempAlerting, setIsTempAlerting] = useState(false);
+
   const [togglingDevices, setTogglingDevices] = useState({
     light: false, ac: false, fan: false
   });
@@ -72,6 +75,12 @@ const DashboardPage = () => {
         } else {
           setIsDustAlerting(false); 
         }
+        if (formattedData.temperature && formattedData.temperature > 30.3) {
+       setIsTempAlerting(true);
+      } else {
+setIsTempAlerting(false);
+       }
+
       }
     } catch (err) {
       console.error(' Failed to fetch historical data:', err);
@@ -121,7 +130,11 @@ const DashboardPage = () => {
   const fetchAlertCount = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/api/sensors/alerts`);
-      setDustAlertCount(res.data.AlertCount);
+      for(const sensor of res.data) {
+        if (sensor.type === 'dust') {
+          setDustAlertCount(sensor.AlertCountToday);
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch alert count:', err);
     }
@@ -177,6 +190,7 @@ const DashboardPage = () => {
           title="Temperature"
           value={`${latestData.temperature}°C`}
           icon={<FaThermometerHalf style={{ color: '#e57373' }} />}
+          isAlerting={isTempAlerting} 
         />
         <SummaryCard
           title="Luminosity"
@@ -201,7 +215,7 @@ const DashboardPage = () => {
       {/* Yêu cầu 3a: Box đếm số lượt */}
       <div className="alert-counter-box">
         <span className="alert-counter-text">
-          Số lượt cảnh báo bụi (hôm nay): <strong>{dustAlertCount}</strong>
+         Cảnh báo Dust: <strong>{dustAlertCount}</strong>
         </span>
       </div>
       
