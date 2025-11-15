@@ -68,19 +68,12 @@ const DashboardPage = () => {
 
         setChartData(data);
         setLatestData(formattedData);
-       
-        
-        if (formattedData.dust && formattedData.dust > 50) {
-          setIsDustAlerting(true); 
-        } else {
-          setIsDustAlerting(false); 
-        }
-        if (formattedData.temperature && formattedData.temperature > 30.3) {
-       setIsTempAlerting(true);
+         if (formattedData.dust && formattedData.dust > 50) {
+        setIsDustAlerting(true); 
       } else {
-setIsTempAlerting(false);
-       }
-
+        setIsDustAlerting(false); 
+      }
+       
       }
     } catch (err) {
       console.error(' Failed to fetch historical data:', err);
@@ -88,6 +81,8 @@ setIsTempAlerting(false);
   }, [isDustAlerting]);
 
 
+
+  
   const fetchLatestData = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/api/sensors/latest`);
@@ -115,7 +110,6 @@ setIsTempAlerting(false);
   
     
       setLatestData(formattedData);
-      
       if (formattedData.dust && formattedData.dust > 50) {
         setIsDustAlerting(true); 
       } else {
@@ -139,6 +133,7 @@ setIsTempAlerting(false);
       console.error('Failed to fetch alert count:', err);
     }
   }, []);
+
 
   useEffect(() => {
     document.title = 'IoT Web';
@@ -166,21 +161,17 @@ setIsTempAlerting(false);
 
 
     setTogglingDevices(prev => ({ ...prev, [deviceName]: true }));
-
     try {
-
       await axios.post(`${API_URL}/api/devices/toggle`, {
         device: deviceName,
         state: newState,
       });
-      
       console.log(`Toggle command for ${deviceName} sent to backend.`);
     } catch (err) {
       console.error('Failed to toggle device:', err);
     
       setTogglingDevices(prev => ({ ...prev, [deviceName]: false }));
-
-    }
+     }
   };
 
   return (
