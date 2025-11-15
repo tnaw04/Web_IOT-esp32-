@@ -1,10 +1,10 @@
-
 const mqtt = require('mqtt');
 require('dotenv').config();
 const { createSensorData } = require('../controllers/sensor.controller');
 const { poolPromise, sql } = require('../db'); 
 
 const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://test.mosquitto.org';
+
 const sensorTopic = process.env.MQTT_TOPIC_SENSOR || 'esp/sensor';
 const statusTopic = 'esp/status/+'; 
 
@@ -29,6 +29,8 @@ client.on('connect', () => {
     });
 });
 
+
+
 client.on('message', (receivedTopic, payload) => {
     try {
         const message = payload.toString();
@@ -38,7 +40,9 @@ client.on('message', (receivedTopic, payload) => {
          
             const sensorData = JSON.parse(message);
             createSensorData(sensorData);
-        } else if (receivedTopic.startsWith('esp/status/')) {
+        } 
+        
+        else if (receivedTopic.startsWith('esp/status/')) {
             
             const statusData = JSON.parse(message);
             updateDeviceStateFromMqtt(statusData);
@@ -47,6 +51,7 @@ client.on('message', (receivedTopic, payload) => {
         console.error(`Failed to process message on topic ${receivedTopic}:`, err);
     }
 });
+
 
 /**
  * Cập nhật trạng thái thiết bị trong CSDL dựa trên thông điệp xác nhận từ ESP32.

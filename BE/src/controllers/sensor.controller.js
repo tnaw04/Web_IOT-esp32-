@@ -1,10 +1,8 @@
-
 const { poolPromise, sql } = require('../db');
-
 
 let sensorMapping = {};
 
-
+// tải thông tin sensor_id từ csdl lên bộ nhớ(cache)
 const loadSensorMapping = async () => {
     try {
         const pool = await poolPromise;
@@ -22,7 +20,7 @@ const loadSensorMapping = async () => {
         process.exit(1); 
     }
 };
-
+// nhận data(json) lưu vào bảng Sensordata                     
 const createSensorData = async (data) => {
     try {
         const pool = await poolPromise;
@@ -34,9 +32,11 @@ const createSensorData = async (data) => {
             {
                 if (sensorMapping[key]) {
                     const sensor_id = sensorMapping[key];
+                   
                     const value = data[key];
 
                     const request = new sql.Request(transaction);
+                   
                     await request
                         .input('sensor_id_insert', sql.Int, sensor_id)
                         .input('value_insert', sql.Real, value)
@@ -102,6 +102,10 @@ const createSensorData = async (data) => {
                             }
                         }
                     }
+
+
+
+                    
                      
                 }
             }
@@ -117,6 +121,7 @@ const createSensorData = async (data) => {
     }
 };
 
+ 
 const getSensorData = async (req, res) => {
   
     const {
@@ -187,7 +192,7 @@ const getSensorData = async (req, res) => {
             request.input('searchTerm', sql.NVarChar, `%${search}%`);
         }
 
-      
+    // biến dữ liệu từ  hàng thành cột
         const pivotQuery = `
             WITH PivotedData AS (
                 SELECT
@@ -205,6 +210,7 @@ const getSensorData = async (req, res) => {
         `;
 
         
+        //querry dem 
         const countRequest = pool.request();
        
         for (const key in request.parameters) {
@@ -238,12 +244,10 @@ const getSensorData = async (req, res) => {
     }
 };
 
+// lấy bản ghi mới nhất cho thẻ card
 const getLatestSensorData = async (req, res) => {
     try {
         const pool = await poolPromise;
-
-        
-    
         const query = `
             SELECT TOP 1
                 FORMAT(CAST(sd.recorded_at AS DATETIME2(0)), 'HH:mm:ss') AS time,
@@ -267,6 +271,7 @@ const getLatestSensorData = async (req, res) => {
     }
 };
 
+//lấy 50 bản ghu dùng cho biểu đồ
 const getHistoricalSensorData = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -297,6 +302,7 @@ const getHistoricalSensorData = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
+
 
 const getAlertCount = async (req, res) => {
      try {

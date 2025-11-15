@@ -1,25 +1,26 @@
 const { poolPromise, sql } = require('../db');
 const mqttClient = require('../mqtt/mqttHandler'); 
-
+// api GET/api/devices/states, lấy trạng thái on/off của thiết bị,dùng để hiển thị nút bật/tắt đúng trạng thái
 const getDeviceStates = async (req, res) => {
   try {
-    const pool = await poolPromise;
-    const result = await pool.request().query('SELECT DeviceName, DeviceState FROM Devices');
+    const pool = await poolPromise; 
+    const result = await pool.request().query('SELECT DeviceName, DeviceState FROM Devices'); // thực thi câu lệnh sql đơn giản -> trả về danh sách thiết bị dưới dạng json
     res.json(result.recordset);
   } catch (err) {
     console.error('SQL Server get device states error:', err);
     res.status(500).send(err.message);
   }
 };
+// api GEt/api/device/:devicename, Lấy lịch sử thiết bị của 1 thiết bị cụ thể
 const getDeviceHistory = async (req, res) => {
-  const { deviceName } = req.params;
-  const { page = 1, limit = 10, state, search } = req.query; 
+  const { deviceName } = req.params; 
+  const { page = 1, limit = 10, state, search } = req.query;   // lấy tham số querry từ 1-10
 
-  const offset = (page - 1) * limit;
+  const offset = (page - 1) * limit; // tính toán offset để bỏ qua các trang trước
   try {
     const pool = await poolPromise;
     let whereClauses = ['d.DeviceName = @DeviceName'];
-    const request = pool.request().input('DeviceName', sql.NVarChar, deviceName);
+    const request = pool.request().input('DeviceName', sql.NVarChar, deviceName);  
 
     if (state) {
       whereClauses.push('al.Action = @State');
@@ -51,7 +52,7 @@ const getDeviceHistory = async (req, res) => {
           al.LogID AS HistoryID,
           d.DeviceName,
           al.Action AS State,
-          FORMAT(DATEADD(hour, 7, al.Timestamp), 'yyyy-MM-dd HH:mm:ss') AS Timestamp
+          FORMAT(DATEADD(hour, 7, al.Timestamp), 'yyyy-MM-dd HH:mm:ss') AS Timestamp 
         FROM ActionLogs al
         JOIN Devices d ON al.DeviceID = d.DeviceID
         ${whereCondition}
@@ -61,8 +62,8 @@ const getDeviceHistory = async (req, res) => {
       `);
 
     res.json({
-      totalPages: totalPages,
-      data: dataResult.recordset,
+      totalPages: totalPages, // tong so trang
+      data: dataResult.recordset, //mang du lieu trang hien tai
     });
   } catch (err) {
     console.error(`SQL Server get history for ${deviceName} error:`, err);
@@ -70,12 +71,14 @@ const getDeviceHistory = async (req, res) => {
   }
 };
 
+//api get/api/devices/history/all, lấy lịch sử hoạt động của tất cả các thiết bị
 const getAllDeviceHistory = async (req, res) => {
   const { page = 1, limit = 10, state, search } = req.query;
   const offset = (page - 1) * limit;
 
   try {
     const pool = await poolPromise;
+
     const request = pool.request();
     let whereClauses = [];
 
@@ -120,16 +123,17 @@ const getAllDeviceHistory = async (req, res) => {
   }
 };
 
+//api POST//api/devices/toggle
 const toggleDeviceState = async (req, res) => {
   const { device, state } = req.body;
 
-
+//Map tên locgic sang cơ sở dữ
   const deviceNameMapping = {
     'light': 'Light',
     'ac': 'Air Conditioner',
     'fan': 'Fan'
   };
-  const dbDeviceName = deviceNameMapping[device];
+  const dbDeviceName = deviceNameMapping[device]; //lấy tên trong CSDL
 
   if (!dbDeviceName) {
     return res.status(400).send('Invalid device name.');
@@ -141,26 +145,28 @@ const toggleDeviceState = async (req, res) => {
     await transaction.begin();
     const request = new sql.Request(transaction);
 
-    
+    // gán các tham số cho truy vấn 
     request
       .input('DeviceName', sql.NVarChar, dbDeviceName)
-      .input('DeviceState', sql.Bit, state) 
-      .input('ActionString', sql.NVarChar, state ? 'ON' : 'OFF'); 
+      .input('DeviceState', sql.Bit, state) //trang thai moi
+      .input('ActionString', sql.NVarChar, state ? 'ON' : 'OFF'); //trang thai dang chuoi
    
-    await request.query(`INSERT INTO ActionLogs (DeviceID, Action) SELECT DeviceID, @ActionString FROM Devices WHERE DeviceName = @DeviceName;`);
-
+    await request.query(`INSERT INTO ActionLogs (DeviceID, Action) 
+                        SELECT DeviceID, @ActionString FROM Devices 
+                        WHERE DeviceName = @DeviceName;`);
+    //dùng select để tìm đúng id từ DeviceName
     await transaction.commit();
 
-    const controlTopic = process.env.MQTT_CONTROL_TOPIC || 'esp/control';
+    const controlTopic = process.env.MQTT_CONTROL_TOPIC || 'esp/control'; // lấy topic điều khiển từ biến môi trường
     let deviceId;
     if (device === 'light') {
       deviceId = 1;
     } else if (device === 'ac') {
       deviceId = 2;
-    } else if (device === 'fan') {5604
+    } else if (device === 'fan') {
       deviceId = 3;
     }
-
+ // ánh xạ tên logic sang id vật lý
     if (deviceId) {
       const command = `LED${deviceId} ${state ? 'ON' : 'OFF'}`;
       mqttClient.publish(controlTopic, command, (err) => {
@@ -168,7 +174,7 @@ const toggleDeviceState = async (req, res) => {
         else console.log(`Published to MQTT: ${command}`);
       });
     }
-
+//nếu id hợp lệ
     res.status(200).send({ message: `${dbDeviceName} state updated to ${state}` });
   } catch (err) {
     console.error(`SQL Server toggle state for ${dbDeviceName} error:`, err);
